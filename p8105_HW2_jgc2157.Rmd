@@ -30,8 +30,11 @@ df <- df %>%
   select(-x15, -x16, -x17)
 
 df$sports_balls <- round(df$sports_balls)
+nrow(df)
 
-summary(df)
+df %>%
+  group_by(year) %>%
+  summarize(mean(chip_bags))
 ```
 
 
@@ -66,8 +69,10 @@ df_p_combined %>%
   group_by(year) %>%
   summarise(mean(total))
 
+nrow(df_p_combined)
+
 ```
 
 Part 3. 
 
-For the Mr. Trash Wheels data set, there were
+For the Mr. Trash Wheels data set, there were 344 observations spanning between 2014 and 2019. In 2015, there was a mean of 1849 chip bags found in a dumpster while in 2019 there was a mean of only 930. 
