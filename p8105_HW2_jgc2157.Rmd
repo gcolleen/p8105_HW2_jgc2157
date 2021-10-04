@@ -1,0 +1,73 @@
+---
+title: "HW2"
+author: "Gunnar"
+date: "10/3/2021"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Loading libraries
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+_Problem 1_
+Part 1. 
+Loading Mr. Trash Wheel dataset
+filtering out row totals
+cleaning variable names and removing unnecssary variables
+rounding sport balls to the nearest integer
+```{r}
+library(readxl)
+df <- read_excel("working data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "Mr. Trash Wheel")
+
+df <- df %>%
+  filter(!endsWith(Month, "Total")) %>%
+  clean_names() %>%
+  select(-x15, -x16, -x17)
+
+df$sports_balls <- round(df$sports_balls)
+
+summary(df)
+```
+
+
+Part 2. 
+Importing 2018 and 2019 data sets
+Remove first row of data
+Add year variable to each data frame
+Omit rows with missing precipitation data
+Omit total row for each df
+```{r}
+df_p2019 <- read_excel("working data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2019 Precipitation", skip = 1)
+
+df_p2019 <- df_p2019 %>%
+  clean_names %>%
+  mutate(year = 2019) %>%
+  filter(!is.na(total)) %>%
+  filter(!is.na(month))
+
+df_p2018 <- read_excel("working data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = "2018 Precipitation", skip = 1)  
+
+df_p2018 <- df_p2018 %>%
+  clean_names %>%
+  mutate(year = 2018) %>%
+  filter(!is.na(total)) %>%
+  filter(!is.na(month))
+
+df_p_combined <- bind_rows(df_p2018, df_p2019) %>%
+  mutate(month = month.name[month])
+
+
+df_p_combined %>%
+  group_by(year) %>%
+  summarise(mean(total))
+
+```
+
+Part 3. 
+
+For the Mr. Trash Wheels data set, there were
