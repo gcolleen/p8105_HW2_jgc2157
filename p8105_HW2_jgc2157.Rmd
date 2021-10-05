@@ -27,14 +27,21 @@ df <- read_excel("working data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet
 df <- df %>%
   filter(!endsWith(Month, "Total")) %>%
   clean_names() %>%
-  select(-x15, -x16, -x17)
+  select(-x15, -x16, -x17) %>%
+  mutate(sports_balls = round(sports_balls))
 
-df$sports_balls <- round(df$sports_balls)
-nrow(df)
+df %>%
+  nrow()
+
+df %>%
+  pull(sports_balls) %>%
+  head()
+
 
 df %>%
   group_by(year) %>%
   summarize(mean(chip_bags))
+
 ```
 
 
