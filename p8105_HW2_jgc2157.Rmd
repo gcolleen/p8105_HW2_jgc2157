@@ -116,12 +116,15 @@ head(pols_df$month)
 Cleaning snp dataframe
 ```{r}
 snp_df <- snp_df %>%
-  separate(date, into = c("year", "month", "day"), sep = "-") %>%
-  mutate(month = as.numeric(month)) %>%
+  separate(date, into = c("year", "month", "day"), sep = "/") %>%
+  mutate(month = as.numeric(month)) %>% 
+  mutate(year = as.numeric(year)) %>%
   mutate(month = month.name[month]) %>%
+  mutate(year = year + 2000) %>%
   select(year, month, -day)
 
 names(snp_df)
+head(snp_df$year)
 ```
 
 Cleaning unemployment dataframe
@@ -136,6 +139,7 @@ names(unemploy_df)
 
 Merging the data sets
 ```{r}
-pols <- full_join(pols_df, snp_df)
+pols <- left_join(snp_df, pols_df)
+pols
 ```
 
