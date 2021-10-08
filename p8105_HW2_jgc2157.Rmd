@@ -104,8 +104,10 @@ pols_df <- pols_df %>%
   separate(mon, into = c("year", "month", "day"), sep = "-") %>%
   mutate(month = as.numeric(month)) %>%
   mutate(month = month.name[month]) %>%
+  mutate(year = as.numeric(year)) %>%
   mutate(prez = ifelse(prez_gop == 1, "gop", ifelse(prez_dem == 1, "dem", NA))) %>%
-  select(year, month, -prez_gop, -prez_dem, -day)
+  select(-prez_gop, -prez_dem, -day) %>%
+  relocate(year, month)
 
 
 names(pols_df)
@@ -121,7 +123,8 @@ snp_df <- snp_df %>%
   mutate(year = as.numeric(year)) %>%
   mutate(month = month.name[month]) %>%
   mutate(year = year + 2000) %>%
-  select(year, month, -day)
+  select(-day) %>%
+  relocate(year, month)
 
 names(snp_df)
 head(snp_df$year)
@@ -132,14 +135,14 @@ Cleaning unemployment dataframe
 unemploy_df <- unemploy_df %>%
   clean_names() %>%
   pivot_longer(cols = jan:dec, names_to = "month") %>%
-  select(year, month)
+  relocate(year, month)
 
 names(unemploy_df)
 ```
 
 Merging the data sets
 ```{r}
-pols <- left_join(snp_df, pols_df)
+pols <- full_join(snp_df, pols_df)
 pols
 ```
 
