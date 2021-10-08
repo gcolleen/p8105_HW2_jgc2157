@@ -111,8 +111,9 @@ pols_df <- pols_df %>%
 
 
 names(pols_df)
+summary(pols_df)
 head(pols_df$month)
-
+nrow(pols_df)
 ```
 
 Cleaning snp dataframe
@@ -127,22 +128,112 @@ snp_df <- snp_df %>%
   relocate(year, month)
 
 names(snp_df)
+summary(snp_df)
 head(snp_df$year)
+nrow(snp_df)
 ```
 
 Cleaning unemployment dataframe
 ```{r}
 unemploy_df <- unemploy_df %>%
   clean_names() %>%
-  pivot_longer(cols = jan:dec, names_to = "month") %>%
-  relocate(year, month)
+  pivot_longer(cols = jan:dec, names_to = "month", values_to = "unemployment") %>%
+  mutate(month = factor(month, labels = month.name)) %>%
+  select(year, month, unemployment)
 
 names(unemploy_df)
+summary(unemploy_df)
+nrow(unemploy_df)
 ```
 
 Merging the data sets
+need to look into the merge and figure out if I am doing this right
 ```{r}
-pols <- full_join(snp_df, pols_df)
+pols <- left_join(snp_df, pols_df, by = c("year", "month"))
+pols <- left_join(pols, unemploy_df)
 pols
+head(pols)
+tail(pols)
+
+pols %>%
+  group_by(prez) %>%
+  summarise(mean(unemployment))
+```
+
+*Discussion of the data set*
+After cleaning the data sets and before merging them, the pols data set contained 822 observations over 9 variables: year, month, gov_gop, sen_gop, rep_gop, gov_dem, sen_dem, rep_dem, and prez. The snp data set, meanwhile, contained 787 observations over 3 variables: year, month, and close. Lastly, the unemployment data set has 816 observations: year, month, and unemployment level.
+
+In the combined data set, there are 787 observations over 11 variables. The time range for the combined data set is between 2001 and 2012. An interesting observation from the data set is that the average unemployment rate under democratic presidents was 9.00 while it was 5.28 under republican presidents. 
+
+_Problem 3_
+Loading the baby name data set
+```{r}
+baby_df <- read_csv("working data/Popular_Baby_Names.csv")
+```
+
+Cleaning the baby name data set
+First, clean names
+Second, make all values lower case
+Third, merge name versions
+Fourth, remove all duplicate rows (based on repeat of name, year, and gender)
+```{r}
+baby_df <- baby_df %>%
+  clean_names() %>%
+  mutate(gender = tolower(gender), ethnicity = tolower(ethnicity), 
+        childs_first_name = tolower(childs_first_name)) %>%
+  mutate(ethnicity = ifelse(ethnicity == "asian and paci" | ethnicity == "asian and pacific islander", "asian and pacific islander", ifelse(ethnicity == "white non hispanic" | ethnicity == "white non hisp", "white non hispanic", ifelse(ethnicity == "black non hispanic" | ethnicity == "black non hisp", "black non hispanic", ethnicity)))) %>%
+  distinct(childs_first_name, gender, year_of_birth, ethnicity, .keep_all = TRUE)
+
+baby_df %>%
+  filter(childs_first_name == "olivia")
+table(baby_df$ethnicity)
+```
+
+Creating table of frequency of name Olivia  over time
+Filter to only girls named Olivia
+group by birth year
+pivot wider so that years are columns
+```{r}
+olivia_table <- baby_df %>%
+  filter(childs_first_name == "olivia", gender == "female") %>%
+  select(-count) %>%
+  group_by(year_of_birth) %>%
+  pivot_wider(
+    names_from = year_of_birth,
+    values_from = rank) %>%
+  select(ethnicity, everything(), -gender, -childs_first_name) %>%
+  knitr::kable(
+  )
+
+olivia_table
+```
+
+Creating table of top boys name over time
+```{r}
+boys_table <- baby_df %>%
+  filter(gender == "male", rank == 1) %>%
+  select(-count) %>%
+  group_by(year_of_birth) %>%
+  pivot_wider(
+    names_from = year_of_birth,
+    values_from = childs_first_name) %>%
+  select(ethnicity, everything(), -gender, -rank) %>%
+  knitr::kable(
+  )
+
+boys_table
+```
+
+Scatter plot of male, white non-hispanic children born in 2016 of name count vs name rank
+```{r}
+boys_name_p <- baby_df %>%
+  filter(ethnicity == "white non hispanic", year_of_birth == 2016) %>%
+  ggplot(aes(x = count, y = rank)) +
+  geom_point(position = "jitter", alpha = 0.5) +
+  labs(title = "Non Hispanic White Boy's Name Frequency vs Rank in 2016") +
+       xlab("Name Count") +
+       ylab("Name Rank")
+
+boys_name_p
 ```
 
