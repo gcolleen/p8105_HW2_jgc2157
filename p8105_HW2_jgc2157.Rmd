@@ -101,14 +101,15 @@ snp_df <- read_csv("working data/fivethirtyeight_datasets/snp.csv")
 Cleaning pols_month dataframe
 ```{r}
 pols_df <- pols_df %>%
-  mutate(month = month.name[month]) %>%
   separate(mon, into = c("year", "month", "day"), sep = "-") %>%
+  mutate(month = as.numeric(month)) %>%
+  mutate(month = month.name[month]) %>%
   mutate(prez = ifelse(prez_gop == 1, "gop", ifelse(prez_dem == 1, "dem", NA))) %>%
-  select(year, month, -prez_gop, -prez_dem, -day) %>%
-  pull(month)
+  select(year, month, -prez_gop, -prez_dem, -day)
+
 
 names(pols_df)
-
+head(pols_df$month)
 
 ```
 
