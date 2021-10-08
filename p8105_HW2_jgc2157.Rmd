@@ -117,6 +117,7 @@ Cleaning snp dataframe
 ```{r}
 snp_df <- snp_df %>%
   separate(date, into = c("year", "month", "day"), sep = "-") %>%
+  mutate(month = as.numeric(month)) %>%
   mutate(month = month.name[month]) %>%
   select(year, month, -day)
 
